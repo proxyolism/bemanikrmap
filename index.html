@@ -1,0 +1,218 @@
+<html lang="ko">
+<meta charset="utf-8">
+
+<head>
+<title>beatmania IIDX map for Korean players(beta)</title>
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?key=AIzaSyCx1UCnCGdv8G2wpewK9k2QJLJgfgvew9w"></script>
+<style>
+html, body, #map_canvas {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+#map_canvas {
+    position: relative;
+}
+p { margin:0 }
+</style>
+</head>
+
+<body>
+<div id="map_canvas"></div>
+<script type="text/javascript">
+
+document.cookie = 'SameSite=Strict';
+
+var currentx=0, currenty=0;
+var x = document.getElementById("map_canvas");
+var mapOptions;
+var map;
+var data;
+var currentposmarker;
+var parsed;
+var infoWindowsList = [];
+
+var isErrorroutine = 0;
+
+navigator.geolocation.getCurrentPosition(showCurrentPosition, errorroutine);
+function showCurrentPosition(position){
+	var googleLatLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+	mapOptions = {
+				zoom: 14,
+				center: googleLatLng,
+				mapTypeId: google.maps.MapTypeId.ROADMAP
+			}
+	map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
+	
+	var Title = document.createElement('h1');
+	Title.style.color = 'black';
+	Title.innerHTML = 'beatmania IIDX map for Korean players (beta) <br/> latest update : 2020-11-27';
+	var TextDiv = document.createElement('div');
+	TextDiv.appendChild(Title);
+	map.controls[google.maps.ControlPosition.TOP_RIGHT].push(TextDiv);
+	
+	currentposmarker = new google.maps.Marker({
+			icon: 'https://www.robotwoods.com/dev/misc/bluecircle.png',
+			position: googleLatLng,
+			map: map
+	});
+	google.maps.event.addListener(currentposmarker, function() {});
+	
+	var request = new XMLHttpRequest();
+	
+	var activeInfoWindow;
+	
+	$.getJSON('https://vp1fiokjaf.execute-api.ap-northeast-2.amazonaws.com/getbemani/entries', function(data) {
+		for(var i=0;i<data.length;i++)
+		{
+			
+			var contentString	= '<B>' + data[i].storename + '</B>' + '<p>'
+								+ '영업시간 : ' + data[i].operation + '<p>'
+								+ data[i].detail;
+			var myLatlng = new google.maps.LatLng(data[i].posx, data[i].posy);
+			
+			var marker; //differ visual for lightning
+			if(data[i].lightning == "TRUE")
+				marker = new google.maps.Marker(
+					{
+						icon: {url: "https://raw.githubusercontent.com/Concept211/Google-Maps-Markers/master/images/marker_purple" + (data[i].iidx).toString() + ".png"},
+						animation : google.maps.Animation.DROP,
+						position: myLatlng,
+						//label : {text : (data[i].iidx).toString(),color : "white"},
+						map: map
+					}
+				);
+			else
+				marker = new google.maps.Marker(
+					{	
+						icon: {url: "https://raw.githubusercontent.com/Concept211/Google-Maps-Markers/master/images/marker_black" + (data[i].iidx).toString() + ".png"},
+						animation : google.maps.Animation.DROP,
+						position: myLatlng,
+						//label : {text : (data[i].iidx).toString(),color : "white"},
+						map: map
+					}
+				);
+			
+			var infowindow = new google.maps.InfoWindow({content: contentString});
+			
+			infoWindowsList.push(infowindow);
+			
+			google.maps.event.addListener(marker, 'click', (function(marker, contentString,infowindow)
+				{
+					return function()
+					{
+						activeInfoWindow&&activeInfoWindow.close();
+						infowindow.setContent(contentString);
+						infowindow.open(map,marker);
+						activeInfoWindow = infowindow;
+					};
+				}
+			)(marker,contentString,infowindow));
+		}
+	});
+}
+
+function errorroutine(){
+	isErrorroutine = 1;
+	alert("Cannot get current location.");
+	mapOptions = {
+				zoom: 8,
+				center: {lat:36.683262, lng:127.881589},
+				mapTypeId: google.maps.MapTypeId.ROADMAP
+			}
+	map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
+	
+	var Title = document.createElement('h1');
+	Title.style.color = 'black';
+	Title.innerHTML = 'beatmania IIDX map for Korean players (beta) <br/> Updated 2020-11-27';
+	var TextDiv = document.createElement('div');
+	TextDiv.appendChild(Title);
+	map.controls[google.maps.ControlPosition.TOP_RIGHT].push(TextDiv);
+	
+	var request = new XMLHttpRequest();
+	
+	var activeInfoWindow;
+	
+	$.getJSON('https://vp1fiokjaf.execute-api.ap-northeast-2.amazonaws.com/getbemani/entries', function(data) {
+		for(var i=0;i<data.length;i++)
+		{
+			
+			var contentString	= '<B>' + data[i].storename + '</B>' + '<p>'
+								+ '영업시간 : ' + data[i].operation + '<p>'
+								+ data[i].detail;
+			var myLatlng = new google.maps.LatLng(data[i].posx, data[i].posy);
+			
+			var marker; //differ visual for lightning
+			if(data[i].lightning == "TRUE")
+				marker = new google.maps.Marker(
+					{
+						icon: {url: "https://raw.githubusercontent.com/Concept211/Google-Maps-Markers/master/images/marker_purple" + (data[i].iidx).toString() + ".png"},
+						animation : google.maps.Animation.DROP,
+						position: myLatlng,
+						//label : {text : (data[i].iidx).toString(),color : "white"},
+						map: map
+					}
+				);
+			else
+				marker = new google.maps.Marker(
+					{	
+						icon: {url: "https://raw.githubusercontent.com/Concept211/Google-Maps-Markers/master/images/marker_black" + (data[i].iidx).toString() + ".png"},
+						animation : google.maps.Animation.DROP,
+						position: myLatlng,
+						//label : {text : (data[i].iidx).toString(),color : "white"},
+						map: map
+					}
+				);
+			
+			var infowindow = new google.maps.InfoWindow({content: contentString});
+			
+			infoWindowsList.push(infowindow);
+			
+			google.maps.event.addListener(marker, 'click', (function(marker, contentString,infowindow)
+				{
+					return function()
+					{
+						activeInfoWindow&&activeInfoWindow.close();
+						infowindow.setContent(contentString);
+						infowindow.open(map,marker);
+						activeInfoWindow = infowindow;
+					};
+				}
+			)(marker,contentString,infowindow));
+		}
+	});
+}
+
+function autoUpdate() {
+	if(isErrorroutine == 0)
+	{ 
+	  navigator.geolocation.getCurrentPosition(function(position) {  
+		var newPoint = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+
+		if (currentposmarker) {
+			currentposmarker.setPosition(newPoint); // Marker already created - Move it
+		}
+		else {
+		  // Marker does not exist - Create it
+			currentposmarker = new google.maps.Marker({
+			icon: 'https://www.robotwoods.com/dev/misc/bluecircle.png',
+			position: newPoint,
+			map: map
+		  });
+		}
+		// Center the map on the new position
+		// map.setCenter(newPoint);
+	  }); 
+	}
+  // Call the autoUpdate() for every 15 seconds to change current location
+  setTimeout(autoUpdate, 15000);
+}
+var isFirefox = typeof InstallTrigger !== 'undefined';
+if(!isFirefox)autoUpdate();
+
+
+</script>
+</body>
+</html>
